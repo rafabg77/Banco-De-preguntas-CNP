@@ -68,16 +68,15 @@
   --c6:var(--violet);
 }
 
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;height:100%}
 body{
   background:var(--bg);
   color:var(--text);
   font-family:var(--font);
-  min-height:100vh;
+  min-height:100%;
   overflow-x:hidden;
   line-height:1.55;
   font-size:15px;
-  /* subtle noise texture via SVG */
 }
 
 /* ── NOISE OVERLAY ── */
@@ -92,8 +91,8 @@ body::before{
 }
 
 /* ── SCREENS ── */
-.screen{display:none;min-height:100vh;animation:fadeIn .25s ease;position:relative;z-index:1}
-.screen.active{display:block}
+.screen{display:none;min-height:100%;animation:fadeIn .25s ease;position:relative;z-index:1;flex-direction:column}
+.screen.active{display:flex}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
 /* ── TOPBAR ── */
@@ -169,7 +168,7 @@ body::before{
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
 
 /* ── HOME ── */
-#home{background:var(--bg)}
+#home{background:var(--bg);flex-direction:column}
 
 /* Hero gradient ambient */
 .home-hero{
@@ -396,8 +395,8 @@ body::before{
 .btn-tool:active{transform:scale(.94)}
 
 /* ── QUIZ ── */
-#quiz{background:var(--bg)}
-.q-body{padding:18px var(--side) 28px;max-width:640px;margin:0 auto}
+#quiz{background:var(--bg);flex-direction:column}
+.q-body{padding:18px var(--side) 28px;max-width:640px;margin:0 auto;flex:1;width:100%}
 
 .q-meta{display:flex;align-items:center;gap:7px;margin-bottom:14px;flex-wrap:wrap}
 .cat-pill{
@@ -469,8 +468,8 @@ body::before{
 .opt.disabled{cursor:default;pointer-events:none}
 .opt.dim-opt{opacity:.38}
 
-/* ── QUIZ COLUMN WRAPPERS (mobile: q-right hidden, q-left is full width) ── */
-.q-left{display:contents} /* transparent wrapper on mobile */
+/* ── QUIZ COLUMN WRAPPERS (mobile: q-right hidden, q-left is full column) ── */
+.q-left{display:flex;flex-direction:column;flex:1;min-height:0}
 .q-right{display:none}    /* hidden on mobile */
 .streak-warn{
   background:rgba(245,158,11,.07);
@@ -519,7 +518,7 @@ body::before{
 .btn-next:active{opacity:.85;transform:translateY(1px)}
 
 /* ── RESULTS ── */
-#results{background:var(--bg);padding:0}
+#results{background:var(--bg);padding:0;flex-direction:column}
 .res-hero{text-align:center;padding:36px var(--side) 24px;max-width:480px;margin:0 auto}
 .res-emoji{font-size:3.5rem;margin-bottom:10px;display:block}
 .res-title{
@@ -585,7 +584,7 @@ body::before{
 .rev-a .ko{color:var(--wrong);font-weight:700}
 
 /* ── DASHBOARD SCREEN ── */
-#dashboard{background:var(--bg);padding:0}
+#dashboard{background:var(--bg);padding:0;flex-direction:column}
 .dash-screen-inner{padding:0 var(--side) 48px;max-width:640px;margin:0 auto}
 .section-title{
   font-size:10px;font-weight:700;color:var(--muted);
@@ -687,7 +686,8 @@ body::before{
 ::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:4px}
 
 /* ── SAFE AREAS ── */
-.screen{padding-bottom:env(safe-area-inset-bottom)}
+/* Only apply to screens that can scroll freely on mobile */
+#home,#results,#dashboard{padding-bottom:env(safe-area-inset-bottom)}
 
 
 /* Distribución materias: oculta en mobile, visible en desktop */
@@ -801,9 +801,28 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
   :root{--side:16px;--r:16px;--r2:12px}
   body{font-size:15px}
 
+  /* Ensure body is scrollable on mobile */
+  html,body{height:auto;overflow-x:hidden;overflow-y:auto}
+
+  /* Screens take full width, flex column, auto height */
+  .screen{min-height:100svh;width:100%}
+
   /* ── HOME ── */
-  #home{display:block}
-  .home-sidebar{padding:20px var(--side) 14px}
+  #home{
+    display:none;
+    flex-direction:column;
+    min-height:100svh;
+    overflow-y:auto;
+    overflow-x:hidden;
+  }
+  #home.active{display:flex}
+
+  /* Sidebar becomes a normal scrollable section */
+  .home-sidebar{
+    padding:20px var(--side) 14px;
+    display:flex;flex-direction:column;gap:0;
+    width:100%;
+  }
   .home-hero{padding:18px 0 16px;text-align:left;border-bottom:1px solid var(--border);margin-bottom:16px}
   .home-hero::after{display:none}
   .home-badge{font-size:9px;margin-bottom:12px}
@@ -815,42 +834,86 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
   .dash-n{font-size:1.7rem}
   .dash-l{font-size:10px}
 
-  /* Ocultar lista olvidadas y herramientas en sidebar (space saving) */
-  .home-sidebar > div[style*="flex:1"]{display:none}
+  /* Top olvidadas — visible en mobile, height limitada */
+  .home-sidebar > div[style*="flex:1"]{
+    display:block !important;
+    max-height:220px;
+    overflow-y:auto;
+    margin-bottom:12px;
+  }
 
   .tools-row{grid-template-columns:repeat(3,1fr);padding:0;max-width:100%;margin:0;gap:8px}
   .btn-tool{padding:10px 4px;font-size:10px}
   .btn-tool .tool-icon{font-size:1rem}
 
-  .home-main{padding:0 var(--side) 32px}
-  .modes-wrap{padding:0;max-width:100%;margin:14px 0 0}
+  /* Main panel on mobile: directly below sidebar */
+  .home-main{
+    padding:0 var(--side) 40px;
+    display:flex;flex-direction:column;gap:14px;
+    width:100%;
+  }
+  .modes-wrap{padding:0;max-width:100%;margin:0}
   .modes-grid{grid-template-columns:1fr;gap:8px}
   .mode-card.full{padding:13px 14px}
   .mode-card.full .mode-icon{font-size:1.2rem}
   .mode-card.full .mode-name{font-size:13px}
   .mode-card.full .mode-desc{font-size:11px}
 
-  .config-row{padding:0;max-width:100%;margin:0 0 12px}
-  .btn-start-wrap{padding:0;max-width:100%;margin:12px 0 0}
+  .config-row{padding:0;max-width:100%;margin:0}
+  .btn-start-wrap{padding:0;max-width:100%;margin:0}
   .btn-start{padding:16px 20px;font-size:.97rem;border-radius:var(--r2)}
 
   #home-cats-wrap{display:none !important}
-  .top10-wrap{padding:0;max-width:100%;margin:14px 0 0}
+  .top10-wrap{padding:0;max-width:100%;margin:0}
 
-  /* ── TOPBAR ── */
-  #quiz .topbar{padding:10px 12px;gap:8px}
+  /* ── QUIZ ── */
+  #quiz{
+    display:none;
+    flex-direction:column;
+    height:100svh;
+    max-height:100svh;
+    overflow:hidden; /* topbar fixed + q-body scrolls */
+    position:fixed;
+    top:0;left:0;right:0;bottom:0;
+    z-index:1;
+  }
+  #quiz.active{display:flex}
+
+  /* Topbar */
+  #quiz .topbar{
+    flex-shrink:0;
+    padding:10px 12px;gap:8px;
+    position:relative;
+    top:auto;z-index:10;
+  }
   .topbar-back{width:34px;height:34px;min-width:34px;font-size:15px;border-radius:10px}
   .prog-labels{font-size:9px;margin-bottom:4px}
   .prog-track{height:3px}
   .score-chip{padding:4px 10px;font-size:10px}
   .timer-chip{padding:4px 10px;font-size:10px}
 
-  /* ── QUIZ ── */
-  .q-body{padding:14px var(--side) 0;max-width:100%}
-  .q-left{display:contents}
+  /* q-body: takes remaining height, scrollable */
+  .q-body{
+    flex:1;
+    min-height:0;
+    overflow-y:auto;
+    overflow-x:hidden;
+    -webkit-overflow-scrolling:touch;
+    padding:14px var(--side) 0;
+    max-width:100%;
+    margin:0;
+    display:flex;
+    flex-direction:column;
+  }
+  .q-left{
+    display:flex;
+    flex-direction:column;
+    flex:1;
+    min-height:0;
+  }
   .q-right{display:none !important}
 
-  .q-meta{gap:6px;margin-bottom:12px}
+  .q-meta{gap:6px;margin-bottom:12px;flex-wrap:wrap}
   .cat-pill{font-size:9px;padding:2px 8px}
   .q-num-lbl{font-size:10px}
   .domain-badge{font-size:9px;padding:2px 8px}
@@ -867,7 +930,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
   .fb-text{font-size:.82rem;line-height:1.7}
   .streak-warn{font-size:.78rem;padding:9px 12px;margin-bottom:12px}
 
-  /* Botón "Siguiente" pegado al fondo — fácil con el pulgar */
+  /* Botón "Siguiente" pegado al fondo */
   .btn-next{
     position:sticky;bottom:0;z-index:20;
     border-radius:0;
@@ -877,11 +940,22 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
     width:calc(100% + 2 * var(--side));
     box-shadow:0 -4px 20px rgba(0,0,0,.4);
     padding-bottom:calc(17px + env(safe-area-inset-bottom));
+    margin-top:auto;
   }
 
   /* ── RESULTS ── */
-  #results{padding:0}
-  .res-hero{padding:24px var(--side) 18px;max-width:100%}
+  #results{
+    display:none;
+    flex-direction:column;
+    min-height:100svh;
+    overflow-y:auto;
+    overflow-x:hidden;
+    -webkit-overflow-scrolling:touch;
+  }
+  #results.active{display:flex}
+  #results > *{width:100%}
+
+  .res-hero{padding:24px var(--side) 18px;max-width:100%;text-align:center}
   .res-emoji{font-size:2.8rem;margin-bottom:8px}
   .res-title{font-size:1.5rem}
   .res-sub{font-size:.78rem}
@@ -904,7 +978,16 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
   .rev-a{font-size:.76rem}
 
   /* ── DASHBOARD ── */
-  .dash-screen-inner{padding:0 var(--side) 40px;max-width:100%}
+  #dashboard{
+    display:none;
+    flex-direction:column;
+    min-height:100svh;
+    overflow-y:auto;
+    overflow-x:hidden;
+    -webkit-overflow-scrolling:touch;
+  }
+  #dashboard.active{display:flex}
+  .dash-screen-inner{padding:0 var(--side) 40px;max-width:100%;flex:1}
   .big-stat-grid{gap:8px}
   .big-stat{padding:14px 12px;border-radius:var(--r2)}
   .big-stat-n{font-size:1.8rem}
@@ -943,6 +1026,8 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
   html,body{height:100%;overflow:hidden}
 
   .screen{min-height:100vh}
+  /* On desktop, active screens need specific display types, not flex */
+  .screen.active{display:block}
 
   /* ══════════════════════════════════
      HOME: sidebar + main — full height
@@ -955,7 +1040,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
     max-width:100%;
     overflow:hidden;
   }
-  #home.active{display:grid}
+  #home.active{display:grid !important}
 
   /* Sidebar */
   .home-sidebar{
@@ -1043,7 +1128,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
      Topbar | Left (pregunta+opciones) | Right (feedback panel)
   ═══════════════════════════════════ */
   #quiz{display:none;height:100vh;overflow:hidden;flex-direction:column}
-  #quiz.active{display:flex}
+  #quiz.active{display:flex !important}
 
   /* Topbar stays fixed at top */
   #quiz .topbar{
@@ -1072,8 +1157,6 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
     overflow-y:auto;
     height:100%;
     min-height:0;
-    /* de-apply display:contents from mobile */
-    contents:unset;
   }
 
   /* ── Right column: feedback panel, always visible, no scroll ── */
@@ -1158,7 +1241,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
   ═══════════════════════════════════ */
   #results{display:none;height:100vh;overflow:hidden}
   #results.active{
-    display:grid;
+    display:grid !important;
     grid-template-columns:340px 1fr;
     grid-template-rows:100vh;
     height:100vh;
@@ -1202,7 +1285,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
      DASHBOARD — full viewport 2-col
   ═══════════════════════════════════ */
   #dashboard{display:none;height:100vh;overflow:hidden;flex-direction:column}
-  #dashboard.active{display:flex}
+  #dashboard.active{display:flex !important}
 
   #dashboard .topbar{flex-shrink:0;padding:12px 40px}
 
@@ -2666,6 +2749,13 @@ function openDashboard(){
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  // On mobile: lock body scroll when in quiz, unlock otherwise
+  const isMobile=window.innerWidth<900;
+  if(isMobile){
+    document.body.style.overflow=(id==='quiz')?'hidden':'';
+    document.documentElement.style.overflow=(id==='quiz')?'hidden':'';
+  }
+  window.scrollTo({top:0,behavior:'instant'});
 }
 function goHome(){
   clearInterval(SESSION_TIMER);
